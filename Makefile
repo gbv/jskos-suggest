@@ -1,9 +1,10 @@
-TITLE  = KOSuggest API Specification
+TITLE  = KOS Suggest API Specification
 AUTHOR = Jakob Voß
 
-NAME   = kosuggest
-GITHUB = https://github.com/gbv/kosuggest
+NAME   = kos-suggest
+GITHUB = https://github.com/gbv/kos-suggest
 
 include makespec/Makefile
 
 HTML_ARGS += --toc-depth=2
+HTML_CSS  = makespec.css
