@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="de_DE">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Jakob Voß" />
+  <meta name="date" content="2015-10-05" />
+  <title>KOS Suggest API Specification</title>
+   <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style type="text/css">
+/*<![CDATA[*/
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+/*]]>*/
+  </style>
+  <style type="text/css">
+  body { font-family: sans-serif; }
+  a { text-decoration: none }
+  a:hover { text-decoration: underline }
+  h1 { font: 170% sans-serif }
+  h1.title { font-size: 200%; font-weight: bold; }
+  h2 { font: 140% sans-serif }
+  h3 { font: 120% sans-serif }
+  dt { font-weight: bold; }
+  h1, h2, h3, h1 a, h2 a, h3 a { color: #005A9C; }
+  table { border-collapse: collapse; }
+  td { border: 1px solid #999; padding: 3px }
+  dl p { margin-top: 0; }
+  dt { margin-top: 0.8em; }
+  dd { margin-left: 1.5em; }
+  ol { margin-bottom: 1em; }
+  table + p { margin-top: 1em; }
+  </style>
+  <link rel="stylesheet" href="makespec.css" />
+</head>
+<body>
+<a href="https://github.com/gbv/kos-suggest"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
+<header>
+<h1 class="title">KOS Suggest API Specification</h1>
+<h3 class="author">Jakob Voß</h3>
+<h4 class="date">2015-10-05 (version 0.1.0)</h4>
+</header>
+
+<h1>Table of Contents</h1>
+<nav id="TOC">
+<ul>
+<li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a><ul>
+<li><a href="#motivation"><span class="toc-section-number">1.1</span> Motivation</a></li>
+<li><a href="#conformance-requirements"><span class="toc-section-number">1.2</span> Conformance requirements</a></li>
+<li><a href="#status-of-this-document"><span class="toc-section-number">1.3</span> Status of this document</a></li>
+</ul></li>
+<li><a href="#overview"><span class="toc-section-number">2</span> Overview</a></li>
+<li><a href="#request-format"><span class="toc-section-number">3</span> Request format</a><ul>
+<li><a href="#request-headers"><span class="toc-section-number">3.1</span> Request headers</a></li>
+<li><a href="#request-parameters"><span class="toc-section-number">3.2</span> Request parameters</a></li>
+</ul></li>
+<li><a href="#response-format"><span class="toc-section-number">4</span> Response format</a><ul>
+<li><a href="#response-headers"><span class="toc-section-number">4.1</span> Response headers</a></li>
+<li><a href="#response-body"><span class="toc-section-number">4.2</span> Response body</a></li>
+<li><a href="#format-strings"><span class="toc-section-number">4.3</span> Format strings</a></li>
+<li><a href="#language-preference"><span class="toc-section-number">4.4</span> Language preference</a></li>
+<li><a href="#jsonp"><span class="toc-section-number">4.5</span> JSONP</a></li>
+<li><a href="#error-response"><span class="toc-section-number">4.6</span> Error response</a></li>
+</ul></li>
+<li><a href="#references"><span class="toc-section-number">5</span> References</a><ul>
+<li><a href="#normative-references"><span class="toc-section-number">5.1</span> Normative References</a></li>
+<li><a href="#informative-references"><span class="toc-section-number">5.2</span> Informative References</a></li>
+</ul></li>
+</ul>
+</nav>
+<section id="introduction" class="level1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p><strong>KOS Suggest</strong> is an <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Suggestions/1.0">OpenSearch Suggestions</a> compatible API to query suggestions of concepts in Knowledge Organization Systems.</p>
+<section id="motivation" class="level2">
+<h2><span class="header-section-number">1.1</span> Motivation</h2>
+<p>Knowledge Organization Systems (KOS), such as classifications, taxonomies, thesauri, gazeteer, and ontologies, provide controlled vocabularies of distinct concepts, each identified by an unique identifier. To select a concept without knowing its identifier it requires methods to search or browse in the KOS.</p>
+<p>Search suggestions, also known as autocomplete or type-ahead, provide a list of recommended search terms as the user types a query. When searching in a KOS, however, the user is not looking for a terms but for concepts that often include multilingual and ambiguous labels. KOS Suggest specifies methods to query <strong>concept suggestions</strong> to be used as search suggestion or concept selection in user interfaces.</p>
+<p>The API is fully compatible with <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Suggestions/1.0">OpenSearch Suggestions</a>, so every <a href="#overview">KOS Suggest Service</a> can also be used as OpenSarch Suggestions service.</p>
+</section>
+<section id="conformance-requirements" class="level2">
+<h2><span class="header-section-number">1.2</span> Conformance requirements</h2>
+<p>The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL” in this document are to be interpreted as described in <a href="https://tools.ietf.org/html/rfc2119">RFC 2119</a>.</p>
+</section>
+<section id="status-of-this-document" class="level2">
+<h2><span class="header-section-number">1.3</span> Status of this document</h2>
+<p>KOS Suggest is currently being specified as part of project <a href="https://coli-conc.gbv.de/">coli-conc</a>. The most current version is available at <a href="http://gbv.github.io/jskos-suggest/">http://gbv.github.io/jskos-suggest/</a>.</p>
+<p>Feedback and open issues are collected in an issue tracker at <a href="https://github.com/gbv/jskos-suggest/issues">https://github.com/gbv/jskos-suggest/issues</a>.</p>
+</section>
+</section>
+<section id="overview" class="level1">
+<h1><span class="header-section-number">2</span> Overview</h1>
+<p>A <strong>KOS Suggest Service</strong> consists of an HTTPS or HTTP URL that, when requested via HTTP GET as defined by the <a href="#request-format">request format</a>, returns concept suggestions as defined by the <a href="#response-format">response format</a>.</p>
+<p>A response is basically created in two steps:</p>
+<ol type="1">
+<li><p>The <a href="#request-parameters">request parameters</a> <strong>query</strong> (or <strong>query^</strong>) and <strong>type</strong> (optional), possibly extended by request parameter <strong>language</strong> and <a href="#request-headers">request header</a> <strong>Accept-Language</strong> are used to retrieve a list of matching concepts.</p></li>
+<li><p>The list of concepts is mapped to a JSON array with a label, a description, and an URI for each concept. Mapping is controlled by <a href="#language-preference">language preference</a> and by <a href="#format-strings">format strings</a> given in the optional request parameters <strong>label</strong> and <strong>description</strong>.</p></li>
+</ol>
+</section>
+<section id="request-format" class="level1">
+<h1><span class="header-section-number">3</span> Request format</h1>
+<section id="request-headers" class="level2">
+<h2><span class="header-section-number">3.1</span> Request headers</h2>
+<p>The following HTTP request headers SHOULD be sent:</p>
+<dl>
+<dt>Accept</dt>
+<dd>The value <code>application/json</code> or <code>application/x-suggestions+json</code>
+</dd>
+<dt>User-Agent</dt>
+<dd>An appropriate client name and version number
+</dd>
+<dt>Accept-Language</dt>
+<dd>A selection of preferred languages as defined by HTTP
+</dd>
+</dl>
+</section>
+<section id="request-parameters" class="level2">
+<h2><span class="header-section-number">3.2</span> Request parameters</h2>
+<p>A KOS Suggest Service MUST respect the following URL query parameters:</p>
+<dl>
+<dt>query</dt>
+<dd>string query
+</dd>
+<dt>query^</dt>
+<dd>prefix query
+</dd>
+<dt>type</dt>
+<dd>An optional concept type, given as URI string
+</dd>
+<dt>language</dt>
+<dd>preferred languages
+</dd>
+<dt>label</dt>
+<dd>An optional <a href="#format-strings">format string</a> to build label strings from
+</dd>
+<dt>description</dt>
+<dd>An optional <a href="#format-strings">format string</a> to build description strings from
+</dd>
+<dt>callback</dt>
+<dd>An optional callback function to enable <a href="#jsonp">JSONP</a>
+</dd>
+</dl>
+<p>A request MUST include at most one of the parameters <strong>query</strong> and <strong>query^</strong>. A KOS Suggest Service MUST respond with an <a href="#error-response">error response</a> if both are given.</p>
+<div class="example">
+<p>Search concepts that begin with “Mark”:</p>
+<pre><code>?query^=Mark</code></pre>
+<p>Search concepts of type <a href="http://example.org/person">http://example.org/person</a> with string “Müller”:</p>
+<pre><code>?query=Müller&amp;type=http://example.org/person</code></pre>
+</div>
+</section>
+</section>
+<section id="response-format" class="level1">
+<h1><span class="header-section-number">4</span> Response format</h1>
+<p>The response format of KOS Suggest API equals to the response format of <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Suggestions/1.0">OpenSearch Suggestions</a> with some additional constraints.</p>
+<p>A successful response is a HTTP response with status code 200 or 203.</p>
+<section id="response-headers" class="level2">
+<h2><span class="header-section-number">4.1</span> Response headers</h2>
+<p>A successful response MUST include the following HTTP response header:</p>
+<dl>
+<dt>Content-Type</dt>
+<dd>The value <code>application/json</code>, <code>text/javascript; charset=utf-8</code>, or <code>application/x-suggestions+json</code> for normal response. The value <code>application/javascript</code> or <code>application/javascript; charset=utf-8</code> for <a href="#jsonp">JSONP</a> response.
+</dd>
+</dl>
+<p>The following HTTP response header SHOULD also be included: to support Cross-Origin Resource Sharing (CORS):</p>
+<dl>
+<dt>Access-Control-Allow-Origin</dt>
+<dd>The value <code>*</code>
+</dd>
+</dl>
+</section>
+<section id="response-body" class="level2">
+<h2><span class="header-section-number">4.2</span> Response body</h2>
+<p>The response body of a successful response MUST be a JSON array of four values:</p>
+<dl>
+<dt>query string</dt>
+<dd>which MUST be a string created by normalizing one of the <a href="#request-parameters">request parameters</a> <strong>query</strong> or <strong>query^</strong>.
+</dd>
+<dt>labels</dt>
+<dd>which MUST be a JSON array of strings. The strings SHOULD NOT be empty.
+</dd>
+<dt>descriptions</dt>
+<dd>which MUST be a JSON array of strings.
+</dd>
+<dt>identifiers</dt>
+<dd>which MUST be a JSON array of distinct URIs given as strings
+</dd>
+</dl>
+<p>The <strong>labels</strong>, <strong>descriptions</strong>, and <strong>identifiers</strong> MUST have same number of members.</p>
+<p>The response MUST be normalized to Unicode Normalization Form C (NFC).</p>
+<p>The response array MUST be wrapped in a <a href="#jsonp">JSONP</a> callback function if <a href="#request-parameters">request parameter</a> <strong>callback</strong> was sent with a valid value.</p>
+<div class="example">
+<p>A minimal valid response body, typically returned in response to an empty query parameter, consists of an empty query string and three empty arrays:</p>
+<pre class="sourceCode json"><code class="sourceCode json"><span class="ot">[</span><span class="st">&quot;&quot;</span><span class="ot">,[],[],[]]</span></code></pre>
+<p>The specification does not enforce a special kind of query string normalization. Reasonable methods can affect whitespace, diacritics, and case. For instance the request</p>
+<pre><code>?query=Müller</code></pre>
+<p>could result in a response with query string normalized to <code>muller</code>:</p>
+<pre class="sourceCode json"><code class="sourceCode json"><span class="ot">[</span><span class="st">&quot;muller&quot;</span><span class="ot">,</span>
+  <span class="ot">[</span><span class="st">&quot;Herta Müller&quot;</span><span class="ot">,</span><span class="st">&quot;Herr und Frau Müller&quot;</span><span class="ot">],</span>
+  <span class="ot">[</span><span class="st">&quot;German-Romanian novelist, poet and essayist&quot;</span><span class="ot">,</span> <span class="st">&quot;Swiss activists&quot;</span><span class="ot">],</span>
+  <span class="ot">[</span><span class="st">&quot;http://www.wikidata.org/entity/Q38049&quot;</span><span class="ot">,</span> <span class="st">&quot;http://www.wikidata.org/entity/Q1613934&quot;</span><span class="ot">]</span>
+<span class="ot">]</span></code></pre>
+To find the query string in labels for highlighting, a client needs to apply the same normalization (<code>herta muller</code>, <code>herr und frau muller</code>).
+</div>
+</section>
+<section id="format-strings" class="level2">
+<h2><span class="header-section-number">4.3</span> Format strings</h2>
+<p><strong>Format strings</strong> are used by a KOS Suggest Service to map a concept to a label string or to a description string. The mapping is further affected by <a href="#language-preference">language preference</a>. Format strings can be provided by <a href="#request-parameters">request parameter</a> <strong>label</strong> or <strong>description</strong>. A KOS Suggestions Service SHOULD use a default format strings if one of these parameters are missing.</p>
+<p>A format string consists of a string with embedded templates given in curly brackets. The string MUST match the following syntax, given in ISO EBNF:</p>
+<pre><code>format-string = { any-character | template } 
+template      = &quot;{&quot;, [ count ], fields, [ &quot;:&quot; delimiter ],  &quot;}&quot;
+count         = &quot;*&quot; | ( digit - &quot;0&quot; ), { digit }
+fields        = field, { &quot;|&quot;, field }
+field         = name [ &quot;@&quot; [ languages ] ]
+name          = namechar, { namechar | digit }
+namechar      = alpha | &quot;_&quot; | &quot;.&quot;
+languages     = language-tag, { &quot;|&quot;, language-tag }
+language-tag  = primary { &quot;-&quot;, subtag }
+primary       = alpha, [ alpha ], [ alpha ], [ alpha ], [ alpha ], [ alpha ], [ alpha ], [ alpha ] 
+subtag        = anum, [ anum ], [ anum ], [ anum ], [ anum ], [ anum ], [ anum ], [ anum ] 
+anum          = alpha | digit
+delimiter     = { any-character - &quot;}&quot; }
+alpha         = &quot;A&quot; | &quot;B&quot; | &quot;C&quot; | &quot;D&quot; | &quot;E&quot; | &quot;F&quot; | &quot;G&quot; | &quot;H&quot; | &quot;I&quot; | &quot;J&quot; | &quot;K&quot; | &quot;L&quot; | &quot;M&quot; | 
+                &quot;N&quot; | &quot;O&quot; | &quot;P&quot; | &quot;Q&quot; | &quot;R&quot; | &quot;S&quot; | &quot;T&quot; | &quot;U&quot; | &quot;V&quot; | &quot;W&quot; | &quot;X&quot; | &quot;Y&quot; | &quot;Z&quot; |
+                &quot;a&quot; | &quot;b&quot; | &quot;c&quot; | &quot;d&quot; | &quot;e&quot; | &quot;f&quot; | &quot;g&quot; | &quot;h&quot; | &quot;i&quot; | &quot;j&quot; | &quot;k&quot; | &quot;l&quot; | &quot;m&quot; |
+                &quot;n&quot; | &quot;o&quot; | &quot;p&quot; | &quot;q&quot; | &quot;r&quot; | &quot;s&quot; | &quot;t&quot; | &quot;u&quot; | &quot;v&quot; | &quot;w&quot; | &quot;x&quot; | &quot;y&quot; | &quot;z&quot; 
+digit         = &quot;0&quot; | &quot;1&quot; | &quot;2&quot; | &quot;3&quot; | &quot;4&quot; | &quot;5&quot; | &quot;6&quot; | &quot;7&quot; | &quot;8&quot; | &quot;9&quot;</code></pre>
+<p>For each template the following fields are extracted:</p>
+<dl>
+<dt>count</dt>
+<dd>a positive integer or the character <code>*</code>. Set to <code>1</code> by default (template <code>{foo}</code> is equivalent to <code>{1foo}</code>).
+</dd>
+<dt>fields</dt>
+<dd>a list of field names
+</dd>
+<dt>delimiter</dt>
+<dd>an optional string, set to “<code>,</code>” by default (template <code>{5foo:, }</code> is equivalent to <code>{5foo}</code>). The empty string is allowed (for instance template <code>{*foo:}</code>).
+</dd>
+<dt>languages</dt>
+<dd>an optional list of language tags. The list can be empty (for instance template <code>{foo@}</code>) but the empty list differs from no list (template <code>{foo}</code>).
+</dd>
+</dl>
+<p>The template is then replaced by a string constructed from a concept as following:</p>
+<div class="note">
+<p><em>…preliminary, informal description…</em></p>
+<ul>
+<li>Languages are ignored if fields have no languages (e.g. <code>notation</code> or <code>uri</code>)</li>
+<li>language <code>@</code> (all languages) is equal to no language only if <code>count</code> is <code>1</code>: <code>{foo@}</code> is equal to <code>{foo}</code> but <code>{*foo@}</code> is not equal to <code>{*foo}</code>.</li>
+<li>For fields with languages:
+<ul>
+<li>If the <code>template</code> contains no <code>languages</code> field
+<ul>
+<li>Use the best matching <a href="#language-preference">prefered language</a>, if available</li>
+<li>Use any other available language, otherwise</li>
+</ul></li>
+<li>Use the specified language(s), if available
+<ul>
+<li>Select best matching to <a href="#language-preference">language preference</a> if concept has multiple languages matching to the template</li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+<div class="note">
+Delimiters are be ignored if field <strong>count</strong> is <code>1</code>, so <code>{1foo:/}</code> is valid but equivalent to <code>{foo}</code>.
+</div>
+<div class="example">
+<p>First notation, followed by preferred label:</p>
+<pre><code>{notation}: {prefLabel}</code></pre>
+<p>The name followed by date of birth and date of death:</p>
+<pre><code>{name} ({birthDate}-{deathDate})</code></pre>
+<p>All notations, separated by the string <code>&quot;, &quot;</code> (default):</p>
+<pre><code>{*notation}</code></pre>
+<p>The first three notations, separated by the string <code>&quot;/&quot;</code>:</p>
+<pre><code>{3notation:/}</code></pre>
+<p>The first two definitions or examples (note that this is not equal to the first two definitions or the first two examples!):</p>
+<pre><code>{2definition|example}</code></pre>
+<p>All alternative labels in all languages, separated by the string <code>&quot;, &quot;</code>:</p>
+<pre><code>{*altLabel@}</code></pre>
+<p>List of alternative labels in Arabic or its ISO 693 language subtags, separated by arabic comma <code>،</code> (U+060C):</p>
+<pre><code>{*altLabel@ar:،}</code></pre>
+</div>
+</section>
+<section id="language-preference" class="level2">
+<h2><span class="header-section-number">4.4</span> Language preference</h2>
+<p>Knowledge Organization Systems are often multilingual. A KOS Suggests Service MUST use language matching, as described in <a href="https://tools.ietf.org/html/rfc4647">RFC 4647</a> to select from sets of languages.</p>
+<p>The Language Priority List is constructed from request parameter <strong>language</strong> (if given) or request header <strong>Accept-Language</strong> (otherwise). If both are given, the latter list MAY be appended to the former with less priority.</p>
+<div class="note">
+This section requires additional description to distinguish language lookup (RFC section 3.4) and language filtering (RFC section 3.3.2)
+</div>
+<p>Language preferences SHOULD also be used for querying, for instance to select which languages to search in.</p>
+</section>
+<section id="jsonp" class="level2">
+<h2><span class="header-section-number">4.5</span> JSONP</h2>
+<p>If <a href="#request-parameters">request parameter</a> <strong>callback</strong> was given, a successful response MUST be wrapped in the JavaScript callback function provided by this parameter.</p>
+<p>A KOS Suggest Service MUST allow at least alphanumerical characters, underscores, and dollar characters in callback function names. A KOS Suggest Service SHOULD responds with an <a href="#error-response">error response</a> if the callback function name contains other characters.</p>
+</section>
+<section id="error-response" class="level2">
+<h2><span class="header-section-number">4.6</span> Error response</h2>
+<p>A response with HTTP status code in the 4xx or 5xx range SHOULD include a response body in JSON format with information about the error.</p>
+<p>In particular, an error response with status code 422 MUST be sent in response to invalid <a href="#request-parameters">request parameters</a>:</p>
+<ul>
+<li>Both <strong>query</strong> and <strong>query^</strong> provided</li>
+<li>Value of <strong>type</strong> is not an URI</li>
+<li>Value of <strong>language</strong> does not look like a <code>|</code> separated list of language codes</li>
+<li>Value of <strong>label</strong> or <strong>description</strong> does not look like a valid <a href="#format-strings">format string</a></li>
+<li>Value of <strong>callback</strong> contains disallowed characters</li>
+</ul>
+</section>
+</section>
+<section id="references" class="level1">
+<h1><span class="header-section-number">5</span> References</h1>
+<section id="normative-references" class="level2">
+<h2><span class="header-section-number">5.1</span> Normative References</h2>
+<ul>
+<li><p>Berners-Lee, T., Fielding, R., Masinter, L. 2005: “RFC 3986: Uniform Resource Identifiers (URI): Generic Syntax”. <a href="https://tools.ietf.org/html/rfc3986">https://tools.ietf.org/html/rfc3986</a>.</p></li>
+<li><p>Phillips, A., Davis, M. 2006. “RFC 4647: Matching of Language Tags”. <a href="http://tools.ietf.org/html/rfc4647">http://tools.ietf.org/html/rfc4647</a>.</p></li>
+<li><p>Bradner, S. 1997. “RFC 2119: Key words for use in RFCs to Indicate Requirement Levels”. <a href="http://tools.ietf.org/html/rfc2119">http://tools.ietf.org/html/rfc2119</a>.</p></li>
+<li><p>Crockford, D. 2006. “RFC 6427: The application/json Media Type for JavaScript Object Notation (JSON)”. <a href="http://tools.ietf.org/html/rfc4627">http://tools.ietf.org/html/rfc4627</a>.</p></li>
+<li><p>ISO/IEC 14977: 1996: “Extended Backus-Naur Form”.</p></li>
+</ul>
+</section>
+<section id="informative-references" class="level2">
+<h2><span class="header-section-number">5.2</span> Informative References</h2>
+<ul>
+<li><p>Clintin, D. 2005, “OpenSearch Suggestions 1.0” <a href="http://www.opensearch.org/Specifications/OpenSearch/Extensions/Suggestions">http://www.opensearch.org/Specifications/OpenSearch/Extensions/Suggestions</a></p></li>
+<li><p>van Kesteren, Anne. 2014. “Cross-Origin Resource Sharing”. <a href="http://www.w3.org/TR/cors/">http://www.w3.org/TR/cors/</a></p></li>
+<li><p>Voß, J. 2015. “JSKOS data format for Knowledge Organization Systems”. <a href="https://gbv.github.io/jskos/">https://gbv.github.io/jskos/</a>.</p></li>
+<li><p>Voß, J. 2015. “JSKOS API Specification”. <a href="https://gbv.github.io/jskos-api/">https://gbv.github.io/jskos-api/</a>.</p></li>
+</ul>
+</section>
+</section>
+</body>
+</html>
